@@ -74,7 +74,7 @@ func (c *CPU) DoCycle() {
 	// Fetch operationCode
 	// gets opCode on the memory address specified by the programCounter
 	// memory is one byte while program counter is 2 bytes, thus we need to fetch [addr] and [addr+1]
-	var currentOperationCode uint16
+
 	// Combine 2 1 bytes memory address to a single 2 bytes operation code with bitwise and or operation
 	// -----------
 	// Example
@@ -85,8 +85,9 @@ func (c *CPU) DoCycle() {
 	// 0xFF00 | 0x10 = 0xFF10
 	// Resulting 0xFF10 as the operationCode
 	// -----------
-	currentOperationCode = uint16(c.memory[c.programCounter])<<8 | uint16(c.memory[c.programCounter+1])
+	currentOperationCode := uint16(c.memory[c.programCounter])<<8 | uint16(c.memory[c.programCounter+1])
 	log.Println(currentOperationCode)
+
 	// Decode operationCode
 	// operationCode table: https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
 
@@ -154,8 +155,9 @@ func (c *CPU) DoCycle() {
 		// (Usually the next instruction is a jump to skip a code block)
 		break
 	case 0xA00:
-		// TODO: ANNN: Sets I to the address NNN.
-		break
+		// ANNN: Sets I to the address NNN.
+		c.doANNN(currentOperationCode)
+
 	case 0xB00:
 		// TODO: BNNN: Jumps to the address NNN plus V0.
 		break
