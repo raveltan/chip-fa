@@ -85,7 +85,7 @@ func (c *CPU) DoCycle() {
 	// 0xFF00 | 0x10 = 0xFF10
 	// Resulting 0xFF10 as the operationCode
 	// -----------
-	currentOperationCode = uint16(c.memory[c.programCounter]<<8) | uint16(c.memory[c.programCounter+1])
+	currentOperationCode = uint16(c.memory[c.programCounter])<<8 | uint16(c.memory[c.programCounter+1])
 	log.Println(currentOperationCode)
 	// Decode operationCode
 	// operationCode table: https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
