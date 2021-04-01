@@ -107,42 +107,47 @@ func (c *CPU) DoCycle() {
 		case 0x0000:
 			// TODO: 00E0: Clear Screen.
 		case 0x000E:
-			// TODO: 00EE: Retrun from subroutine.
+			// 00EE: Retrun from subroutine.
+			c.do000E()
 		}
 	case 0x1000:
-		// TODO: 1NNN: Jumps to address NNN.
-		break
+		// 1NNN: Jumps to address NNN.
+		c.do1NNN(currentOperationCode)
 	case 0x2000:
 		// 2NNN: Call subroutine at NNN.
 		c.do2NNN(currentOperationCode)
 	case 0x3000:
-		// TODO: 3XNN: Skips the next instruction if VX equals NN.
+		// 3XNN: Skips the next instruction if VX equals NN.
 		// (Usually the next instruction is a jump to skip a code block)
-		break
+		c.do3XNN(currentOperationCode)
 	case 0x4000:
-		// TODO: 4XNN: Skips the next instruction if VX doesn't equal NN.
+		// 4XNN: Skips the next instruction if VX doesn't equal NN.
 		// (Usually the next instruction is a jump to skip a code block)
-		break
+		c.do4XNN(currentOperationCode)
 	case 0x5000:
-		// TODO: 5XY0: Skips the next instruction if VX equals VY.
+		// 5XY0: Skips the next instruction if VX equals VY.
 		// (Usually the next instruction is a jump to skip a code block)
-		break
+		c.do5XY0(currentOperationCode)
 	case 0x6000:
-		// TODO: 6XNN: Sets VX to NN.
-		break
+		// 6XNN: Sets VX to NN.
+		c.do6XNN(currentOperationCode)
 	case 0x7000:
-		// TODO: 7XNN: Adds NN to VX. (Carry flag is not changed)
-		break
+		// 7XNN: Adds NN to VX. (Carry flag is not changed)
+		c.do7XNN(currentOperationCode)
 	case 0x800:
 		switch currentOperationCode & 0x000F {
 		case 0x0000:
-			// TODO: 8XY0: Sets VX to the value of VY.
+			// 8XY0: Sets VX to the value of VY.
+			c.do8XY0(currentOperationCode)
 		case 0x0001:
-			// TODO: 8XY1: Sets VX to VX or VY. (Bitwise OR operation)
+			// 8XY1: Sets VX to VX or VY. (Bitwise OR operation)
+			c.do8XY1(currentOperationCode)
 		case 0x0002:
-			// TODO: 8XY2: Sets VX to VX and VY. (Bitwise AND operation)
+			// 8XY2: Sets VX to VX and VY. (Bitwise AND operation)
+			c.do8XY2(currentOperationCode)
 		case 0x0003:
-			// TODO: 8XY3: Sets VX to VX xor VY.
+			// 8XY3: Sets VX to VX xor VY.
+			c.do8XY3(currentOperationCode)
 		case 0x0004:
 			// 8XY4: Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.
 			c.do8XY4(currentOperationCode)
@@ -157,16 +162,16 @@ func (c *CPU) DoCycle() {
 		}
 
 	case 0x9000:
-		// TODO: 9XY0: Skips the next instruction if VX doesn't equal VY.
+		// 9XY0: Skips the next instruction if VX doesn't equal VY.
 		// (Usually the next instruction is a jump to skip a code block)
-		break
+		c.do9XY0(currentOperationCode)
 	case 0xA000:
 		// ANNN: Sets I to the address NNN.
 		c.doANNN(currentOperationCode)
 
 	case 0xB000:
-		// TODO: BNNN: Jumps to the address NNN plus V0.
-		break
+		// BNNN: Jumps to the address NNN plus V0.
+		c.doBNNN(currentOperationCode)
 	case 0xC000:
 		// TODO: CXNN: Sets VX to the result of a bitwise and operation on a random number.
 		// (Typically: 0 to 255) and NN.
