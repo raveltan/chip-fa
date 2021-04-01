@@ -27,14 +27,14 @@ func (e *Emulator) Draw(s *ebiten.Image) {
 }
 
 func (e *Emulator) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return outsideWidth / 2, outsideHeight / 2
+	return outsideWidth / 12, outsideHeight / 12
 }
 
 func main() {
 	// TODO: Enable load ROM
 	// TODO: add cli utilities
-
-	ebiten.SetWindowSize(600, 600)
+	// TODO: add scaling functionalities
+	ebiten.SetWindowSize(64*12, 32*12)
 	ebiten.SetWindowTitle("Chiper")
 
 	cpu := cpu.CPU{}

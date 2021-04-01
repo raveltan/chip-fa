@@ -180,32 +180,34 @@ func (c *CPU) DoCycle() {
 		// (Usually the next instruction is a jump to skip a code block)
 		break
 	case 0xF00:
-		// TODO: FX07: Sets VX to the value of the delay timer.
+	// TODO: FX07: Sets VX to the value of the delay timer.
 
-		// TODO: FX0A: A key press is awaited, and then stored in VX.
-		// (Blocking Operation. All instruction halted until next key event)
+	// TODO: FX0A: A key press is awaited, and then stored in VX.
+	// (Blocking Operation. All instruction halted until next key event)
 
-		// TODO: FX15: Sets the delay timer to VX.
+	// TODO: FX15: Sets the delay timer to VX.
 
-		// TODO: FX18: Sets the sound timer to VX.
+	// TODO: FX18: Sets the sound timer to VX.
 
-		// TODO: FX1E: Adds VX to I. VF is not affected.
+	// TODO: FX1E: Adds VX to I. VF is not affected.
 
-		// TODO: FX29: Sets I to the location of the sprite for the character in VX.
-		//  Characters 0-F (in hexadecimal) are represented by a 4x5 font.
+	// TODO: FX29: Sets I to the location of the sprite for the character in VX.
+	//  Characters 0-F (in hexadecimal) are represented by a 4x5 font.
 
-		// TODO: FX33: Stores the binary-coded decimal representation of VX,
-		// with the most significant of three digits at the address in I,
-		// the middle digit at I plus 1, and the least significant digit at I plus 2.
-		// (In other words, take the decimal representation of VX,
-		// place the hundreds digit in memory at location in I, the tens digit at location I+1,
-		// and the ones digit at location I+2.)
+	// TODO: FX33: Stores the binary-coded decimal representation of VX,
+	// with the most significant of three digits at the address in I,
+	// the middle digit at I plus 1, and the least significant digit at I plus 2.
+	// (In other words, take the decimal representation of VX,
+	// place the hundreds digit in memory at location in I, the tens digit at location I+1,
+	// and the ones digit at location I+2.)
 
-		// TODO: FX55: Stores V0 to VX (including VX) in memory starting at address I.
-		// The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+	// TODO: FX55: Stores V0 to VX (including VX) in memory starting at address I.
+	// The offset from I is increased by 1 for each value written, but I itself is left unmodified.
 
-		// TODO: FX65: Fills V0 to VX (including VX) with values from memory starting at address I.
-		// The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+	// TODO: FX65: Fills V0 to VX (including VX) with values from memory starting at address I.
+	// The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+	default:
+		panic("error: Unknown operationCode!")
 	}
 
 	// Execute operationCode
