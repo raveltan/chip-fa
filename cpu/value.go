@@ -25,6 +25,6 @@ var (
 	//The uppermost 256 bytes (0xF00-0xFFF) are reserved for display refresh,
 	// and the 96 bytes below that (0xEA0-0xEFF) were reserved for the call stack, internal use, and other variables
 	// https://en.wikipedia.org/wiki/CHIP-8#Memory
-	// Some chip8 implementation also do 0xFFF - 0x200 for the max ROM size.
+	// Some chip8 emulator implementation also do 0xFFF - 0x200 for the max ROM size.
 	maxRomSize = 0xEA0 - 0x200
 )
