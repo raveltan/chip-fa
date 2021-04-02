@@ -38,6 +38,8 @@ type CPU struct {
 
 	// Draw Flag
 	// Should be exported to be used on the Emulator struct
+	// FIXME: currently not used due the internal working of the graphic libarry
+	// that always draws 60Hz thus this flag is ignored.
 	ShouldDraw bool
 }
 
@@ -84,6 +86,7 @@ func (c *CPU) DoCycle() {
 	// 0xFF00 | 0x10 = 0xFF10
 	// Resulting 0xFF10 as the operationCode
 	// -----------
+
 	currentOperationCode := uint16(c.memory[c.programCounter])<<8 | uint16(c.memory[c.programCounter+1])
 	log.Println(fmt.Sprintf("0x%x", currentOperationCode))
 
@@ -99,7 +102,7 @@ func (c *CPU) DoCycle() {
 	// => 0x8000
 	// Which is the first 4 bit of the operationCode
 	switch currentOperationCode & 0xF000 {
-	case 0x00000:
+	case 0x0000:
 		switch currentOperationCode & 0x000F {
 		// 0NNN: Call machine code routine (not used in most ROMS). (NOT IMPLEMENTED)
 		case 0x0000:

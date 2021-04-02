@@ -185,6 +185,7 @@ func (c *CPU) doDXYN(operationCode uint16) {
 
 		for xline := 0; xline < 8; xline++ {
 			if (pixelData & (0x80 >> xline)) != 0 {
+				// FIXME: runtime error: index out of range [2101] with length 2048
 				if c.Screen[(int(x)+xline+((int(y)+yline)*64))] == 1 {
 					c.register[0xF] = 1
 				}

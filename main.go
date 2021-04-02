@@ -68,7 +68,7 @@ func main() {
 	cpu := new(cpu.CPU)
 	cpu.Boot()
 	// TODO: Enable load ROM from flag
-	cpu.LoadROM("./roms/particle_demo.ch8")
+	cpu.LoadROM("./roms/ibm_logo.ch8")
 	// TODO: add cli utilities
 	// TODO: add scaling functionalities
 	ebiten.SetWindowSize(64*12, 32*12)
