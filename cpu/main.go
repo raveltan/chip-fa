@@ -3,7 +3,6 @@ package cpu
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 )
 
 type CPU struct {
@@ -26,7 +25,8 @@ type CPU struct {
 	// Timers (60Hz)
 	delayTimer uint8
 	// Will buzz the system when it reaches 0
-	soundTimer uint8
+	// Updated on the rendering side
+	SoundTimer uint8
 
 	// Chip8's Stack
 	stack [16]uint16
@@ -88,7 +88,7 @@ func (c *CPU) DoCycle() {
 	// -----------
 
 	currentOperationCode := uint16(c.memory[c.programCounter])<<8 | uint16(c.memory[c.programCounter+1])
-	log.Println(fmt.Sprintf("0x%x", currentOperationCode))
+	// log.Println(fmt.Sprintf("0x%x", currentOperationCode))
 
 	// Decode operationCode
 	// operationCode table: https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
@@ -257,14 +257,7 @@ func (c *CPU) DoCycle() {
 		panic(fmt.Sprintf("error: Unknown operationCode (0x%x)", currentOperationCode))
 	}
 
-	// Update Timer
-	if c.soundTimer > 0 {
-		if c.soundTimer == 1 {
-			// Beep the buzzer
-			log.Println("Beep")
-		}
-		c.soundTimer--
-	}
+	// Sound timer is updated on the rendering side
 
 	if c.delayTimer > 0 {
 		c.delayTimer--

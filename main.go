@@ -7,8 +7,10 @@ import (
 	_ "image/png"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/raveltan/chip-fa/cpu"
+	"github.com/raveltan/chip-fa/wavegen"
 )
 
 var splash *ebiten.Image
@@ -24,17 +26,47 @@ func init() {
 type Emulator struct {
 	cpu               *cpu.CPU
 	splashScreenTimer int
+	beepAudioPlayer   *audio.Player
+	beepAudioTimer    int
 }
 
 func (e *Emulator) Update() error {
+	if e.beepAudioPlayer == nil {
+		// Pass the (infinite) stream to audio.NewPlayer.
+		// After calling Play, the stream never ends as long as the player object lives.
+		var err error
+		e.beepAudioPlayer, err = audio.NewPlayer(audio.NewContext(44100), &wavegen.Stream{})
+		if err != nil {
+			return err
+		}
+	}
 	if e.splashScreenTimer == 0 {
 		e.cpu.DoCycle()
 		// TODO: find a way to do conditional rerendering
-		// if e.cpu.ShouldDraw {
-		// 	log.Println("Should redraw")
-		// }
-
 		// TODO: Handle user input
+		for k := ebiten.Key(0); k <= ebiten.KeyMax; k++ {
+			if ebiten.IsKeyPressed(k) {
+				log.Println(k)
+			}
+		}
+		// Update sound timer
+		if e.cpu.SoundTimer > 0 || e.beepAudioTimer > 0 {
+			if e.cpu.SoundTimer > 0 {
+				if e.cpu.SoundTimer == 1 {
+					// Beep the buzzer
+					e.beepAudioPlayer.Play()
+					e.beepAudioTimer = 25
+				}
+				e.cpu.SoundTimer--
+			}
+			if e.beepAudioTimer > 0 {
+				if e.beepAudioTimer == 1 {
+					// Stop wave generator
+					e.beepAudioPlayer.Pause()
+				}
+				e.beepAudioTimer--
+			}
+		}
 	} else {
 		e.splashScreenTimer--
 	}
@@ -68,7 +100,7 @@ func main() {
 	cpu := new(cpu.CPU)
 	cpu.Boot()
 	// TODO: Enable load ROM from flag
-	cpu.LoadROM("./roms/ibm_logo.ch8")
+	cpu.LoadROM("./roms/pong.ch8")
 	// TODO: add cli utilities
 	// TODO: add scaling functionalities
 	ebiten.SetWindowSize(64*12, 32*12)

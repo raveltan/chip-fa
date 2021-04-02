@@ -238,7 +238,7 @@ func (c *CPU) doFX15(operationCode uint16) {
 	c.doAdvanceProgramCounter()
 }
 func (c *CPU) doFX18(operationCode uint16) {
-	c.soundTimer = c.register[(operationCode&0x0F00)>>8]
+	c.SoundTimer = c.register[(operationCode&0x0F00)>>8]
 	c.doAdvanceProgramCounter()
 }
 func (c *CPU) doFX1E(operationCode uint16) {
