@@ -1,4 +1,4 @@
-module ravel.com/chiper
+module github.com/raveltan/chip-fa
 
 go 1.16
 
