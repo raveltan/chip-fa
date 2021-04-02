@@ -10,8 +10,10 @@ func (c *CPU) doAdvanceProgramCounter() {
 
 // 0x0*** Instructions
 func (c *CPU) do00E0() {
-	// TODO: Check correctness of implementation
-	c.screen = [64 * 32]uint8{}
+	for i := range c.Screen {
+		c.Screen[i] = 0
+	}
+	c.ShouldDraw = true
 	c.doAdvanceProgramCounter()
 }
 func (c *CPU) do000E() {
@@ -20,13 +22,11 @@ func (c *CPU) do000E() {
 	// Re-assign the program counter to the program counter on the previous stack
 	c.programCounter = c.stack[c.stackPointer]
 
-	// TODO: Check if advance is needed
 	c.doAdvanceProgramCounter()
 }
 
 // 0x1*** Instructions
 func (c *CPU) do1NNN(operationCode uint16) {
-	// TODO: Check correctness of implementation
 	c.programCounter = (operationCode & 0x0FFF)
 }
 
@@ -43,7 +43,6 @@ func (c *CPU) do2NNN(operationCode uint16) {
 
 // 0x3*** Instructions
 func (c *CPU) do3XNN(operationCode uint16) {
-	// TODO: Check implementation
 	// If value of register X == NN skip next instruction
 	if c.register[(operationCode&0x0F00)>>8] == (uint8(operationCode & 0x00FF)) {
 		c.doAdvanceProgramCounter()
@@ -53,7 +52,6 @@ func (c *CPU) do3XNN(operationCode uint16) {
 
 // 0x4*** Instructions
 func (c *CPU) do4XNN(operationCode uint16) {
-	// TODO: Check implementation
 	// If value of register X != NN skip next instruction
 	if c.register[(operationCode&0x0F00)>>8] != (uint8(operationCode & 0x00FF)) {
 		c.doAdvanceProgramCounter()
@@ -63,7 +61,6 @@ func (c *CPU) do4XNN(operationCode uint16) {
 
 // 0x5*** Instructions
 func (c *CPU) do5XY0(operationCode uint16) {
-	// TODO: Check implementation
 	// If value of register X == value of register Y skip next instruction
 	if c.register[(operationCode&0x0F00)>>8] == c.register[(operationCode&0x00F0)>>4] {
 		c.doAdvanceProgramCounter()
@@ -73,39 +70,33 @@ func (c *CPU) do5XY0(operationCode uint16) {
 
 // 0x6*** Instructions
 func (c *CPU) do6XNN(operationCode uint16) {
-	// TODO: Check implementation
 	c.register[(operationCode&0x0F00)>>8] = uint8(operationCode & 0x00FF)
 	c.doAdvanceProgramCounter()
 }
 
 // 0x7*** Instructions
 func (c *CPU) do7XNN(operationCode uint16) {
-	// TODO: Check implementation
 	c.register[(operationCode&0x0F00)>>8] += uint8(operationCode & 0x00FF)
 	c.doAdvanceProgramCounter()
 }
 
 // 0x8*** Instructions
 func (c *CPU) do8XY0(operationCode uint16) {
-	// TODO: Check implementation
 	c.register[(operationCode&0x0F00)>>8] = c.register[(operationCode&0x00F0)>>4]
 	c.doAdvanceProgramCounter()
 }
 
 func (c *CPU) do8XY1(operationCode uint16) {
-	// TODO: Check implementation
 	c.register[(operationCode&0x0F00)>>8] = c.register[(operationCode&0x0F00)>>8] | c.register[(operationCode&0x00F0)>>4]
 	c.doAdvanceProgramCounter()
 }
 
 func (c *CPU) do8XY2(operationCode uint16) {
-	// TODO: Check implementation
 	c.register[(operationCode&0x0F00)>>8] = c.register[(operationCode&0x0F00)>>8] & c.register[(operationCode&0x00F0)>>4]
 	c.doAdvanceProgramCounter()
 }
 
 func (c *CPU) do8XY3(operationCode uint16) {
-	// TODO: Check implementation
 	c.register[(operationCode&0x0F00)>>8] = c.register[(operationCode&0x0F00)>>8] ^ c.register[(operationCode&0x00F0)>>4]
 	c.doAdvanceProgramCounter()
 }
@@ -126,9 +117,38 @@ func (c *CPU) do8XY4(operationCode uint16) {
 	c.doAdvanceProgramCounter()
 }
 
+func (c *CPU) do8XY5(operationCode uint16) {
+	if c.register[(operationCode&0x0F00)>>8] < c.register[(operationCode&0x00F0)>>4] {
+		c.register[0xF] = 0
+	} else {
+		c.register[0xF] = 1
+	}
+	c.register[(operationCode&0x0F00)>>8] -= c.register[(operationCode&0x00F0)>>4]
+	c.doAdvanceProgramCounter()
+}
+func (c *CPU) do8XY6(operationCode uint16) {
+	c.register[0xF] = c.register[(operationCode&0x0F00)>>8] & 0x1
+	c.register[(operationCode&0x0F00)>>8] >>= 1
+	c.doAdvanceProgramCounter()
+}
+
+func (c *CPU) do8XY7(operationCode uint16) {
+	if c.register[(operationCode&0x0F00)>>8] > c.register[(operationCode&0x00F0)>>4] {
+		c.register[0xF] = 0
+	} else {
+		c.register[0xF] = 1
+	}
+	c.register[(operationCode&0x0F00)>>8] = c.register[(operationCode&0x00F0)>>4] - c.register[(operationCode&0x0F00)>>8]
+	c.doAdvanceProgramCounter()
+}
+func (c *CPU) do8XYE(operationCode uint16) {
+	c.register[0xF] = c.register[(operationCode&0x0F00)>>8] >> 7
+	c.register[(operationCode&0x0F00)<<8] <<= 1
+	c.doAdvanceProgramCounter()
+}
+
 // 0x9*** Instructions
 func (c *CPU) do9XY0(operationCode uint16) {
-	// TODO: Check implementation
 	if c.register[(operationCode&0x0F00)>>8] != c.register[(operationCode&0x00F0)>>4] {
 		c.doAdvanceProgramCounter()
 	}
@@ -144,38 +164,94 @@ func (c *CPU) doANNN(operationCode uint16) {
 
 // 0xB*** Instructions
 func (c *CPU) doBNNN(operationCode uint16) {
-	// TODO: Check correctness of implementation
 	c.programCounter = (operationCode & 0x0FFF) + uint16(c.register[0])
 }
 
 // 0xC*** Instructions
 func (c *CPU) doCXNN(operationCode uint16) {
-	// TODO: Check correctness of implementation
-	c.register[(operationCode&0x0F00)>>8] = uint8(rand.Intn(255)) & uint8(operationCode&0x00FF)
+	c.register[(operationCode&0x0F00)>>8] = uint8(rand.Intn(0xFF)) & uint8(operationCode&0x00FF)
 	c.doAdvanceProgramCounter()
 }
 
 // 0xD*** Instructions
+func (c *CPU) doDXYN(operationCode uint16) {
+	x, y, h := c.register[(operationCode&0x0F00)>>8], c.register[(operationCode&0x00F0)>>4], operationCode&0x000F
+	pixelData := uint8(0)
+
+	// Track if any pixels are flipped from set to unset.
+	c.register[0xF] = 0
+	for yline := 0; yline < int(h); yline++ {
+		pixelData = c.memory[c.indexRegister+uint16(yline)]
+
+		for xline := 0; xline < 8; xline++ {
+			if (pixelData & (0x80 >> xline)) != 0 {
+				if c.Screen[(int(x)+xline+((int(y)+yline)*64))] == 1 {
+					c.register[0xF] = 1
+				}
+				c.Screen[int(x)+xline+((int(y)+yline)*64)] ^= 1
+			}
+		}
+	}
+
+	c.ShouldDraw = true
+	c.doAdvanceProgramCounter()
+}
+
 // 0xE*** Instructions
+func (c *CPU) doEX9E(operationCode uint16) {
+	if c.KeypadStates[c.register[(operationCode&0x0F00)>>8]] != 0 {
+		c.doAdvanceProgramCounter()
+	}
+	c.doAdvanceProgramCounter()
+}
+func (c *CPU) doEXA1(operationCode uint16) {
+	if c.KeypadStates[c.register[(operationCode&0x0F00)>>8]] == 0 {
+		c.doAdvanceProgramCounter()
+	}
+	c.doAdvanceProgramCounter()
+}
+
 // 0xF*** Instructions
 func (c *CPU) doFX07(operationCode uint16) {
-	// TODO: Check correctness of implementation
 	c.register[(operationCode&0x0F00)>>8] = c.delayTimer
 	c.doAdvanceProgramCounter()
 }
+
+func (c *CPU) doFX0A(operationCode uint16) {
+	pressed := false
+	for i, v := range c.KeypadStates {
+		if v != 0 {
+			c.register[(operationCode&0x0F00)>>8] = uint8(i)
+			pressed = true
+		}
+	}
+
+	if !pressed {
+		return
+	}
+	c.doAdvanceProgramCounter()
+}
+
 func (c *CPU) doFX15(operationCode uint16) {
-	// TODO: Check correctness of implementation
 	c.delayTimer = c.register[(operationCode&0x0F00)>>8]
 	c.doAdvanceProgramCounter()
 }
 func (c *CPU) doFX18(operationCode uint16) {
-	// TODO: Check correctness of implementation
 	c.soundTimer = c.register[(operationCode&0x0F00)>>8]
 	c.doAdvanceProgramCounter()
 }
 func (c *CPU) doFX1E(operationCode uint16) {
-	// TODO: Check correctness of implementation
+	if c.indexRegister+uint16(c.register[(operationCode&0x0F00)>>8]) > 0xFFF {
+		c.register[0xF] = 1
+	} else {
+		c.register[0xF] = 0
+	}
 	c.indexRegister += uint16(c.register[(operationCode&0x0F00)>>8])
+	c.doAdvanceProgramCounter()
+}
+
+func (c *CPU) doFX29(operationCode uint16) {
+	c.indexRegister = uint16(c.register[(operationCode&0x0F00)>>8]) * 0x5
 	c.doAdvanceProgramCounter()
 }
 func (c *CPU) doFX33(operationCode uint16) {
@@ -187,5 +263,28 @@ func (c *CPU) doFX33(operationCode uint16) {
 	c.memory[c.indexRegister+1] = (registerXValue / 10) % 10
 	// Set the one's value of x to memory[I+2]
 	c.memory[c.indexRegister+2] = (registerXValue % 100) % 10
+	c.doAdvanceProgramCounter()
+}
+
+func (c *CPU) doFX55(operationCode uint16) {
+	for i := 0; i <= int((operationCode&0x0F00)>>8); i++ {
+		c.memory[int(c.indexRegister)+i] = c.register[i]
+	}
+
+	// On the original system
+	// When the operation is done
+	// indexRegistered += X + 1
+
+	c.indexRegister += (operationCode&0x0F00)>>8 + 1
+	c.doAdvanceProgramCounter()
+}
+
+func (c *CPU) doFX65(operationCode uint16) {
+	for i := 0; i <= int((operationCode&0x0F00)>>8); i++ {
+		c.register[i] = c.memory[int(c.indexRegister)+i]
+	}
+
+	// On the original interpreter, when the operation is done, I = I + X + 1.
+	c.indexRegister += (operationCode&0x0F00)>>8 + 1
 	c.doAdvanceProgramCounter()
 }

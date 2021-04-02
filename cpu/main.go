@@ -21,7 +21,7 @@ type CPU struct {
 	programCounter uint16
 
 	// Chip8's screen is 64 x 32 black and white screen.
-	screen [64 * 32]uint8
+	Screen [64 * 32]uint8
 
 	// Timers (60Hz)
 	delayTimer uint8
@@ -34,7 +34,7 @@ type CPU struct {
 	stackPointer uint16
 
 	// Keypad states tracker
-	keypadStates [16]uint8
+	KeypadStates [16]uint8
 
 	// Draw Flag
 	// Should be exported to be used on the Emulator struct
@@ -85,7 +85,7 @@ func (c *CPU) DoCycle() {
 	// Resulting 0xFF10 as the operationCode
 	// -----------
 	currentOperationCode := uint16(c.memory[c.programCounter])<<8 | uint16(c.memory[c.programCounter+1])
-	log.Println(currentOperationCode)
+	log.Println(fmt.Sprintf("0x%x", currentOperationCode))
 
 	// Decode operationCode
 	// operationCode table: https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
@@ -108,6 +108,8 @@ func (c *CPU) DoCycle() {
 		case 0x000E:
 			// 00EE: Retrun from subroutine.
 			c.do000E()
+		default:
+			panic(fmt.Sprintf("error: Unknown operationCode (0x%x)", currentOperationCode))
 		}
 	case 0x1000:
 		// 1NNN: Jumps to address NNN.
@@ -133,7 +135,7 @@ func (c *CPU) DoCycle() {
 	case 0x7000:
 		// 7XNN: Adds NN to VX. (Carry flag is not changed)
 		c.do7XNN(currentOperationCode)
-	case 0x800:
+	case 0x8000:
 		switch currentOperationCode & 0x000F {
 		case 0x0000:
 			// 8XY0: Sets VX to the value of VY.
@@ -151,13 +153,19 @@ func (c *CPU) DoCycle() {
 			// 8XY4: Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.
 			c.do8XY4(currentOperationCode)
 		case 0x0005:
-			// TODO: 8XY5: VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+			// 8XY5: VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+			c.do8XY5(currentOperationCode)
 		case 0x0006:
-			// TODO: 8XY6: Stores the least significant bit of VX in VF and then shifts VX to the right by 1.
+			// 8XY6: Stores the least significant bit of VX in VF and then shifts VX to the right by 1.
+			c.do8XY6(currentOperationCode)
 		case 0x0007:
-			// TODO: 8XY7: Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+			// 8XY7: Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+			c.do8XY7(currentOperationCode)
 		case 0x000E:
-			// TODO: 8XYE: Stores the most significant bit of VX in VF and then shifts VX to the left by 1.
+			// 8XYE: Stores the most significant bit of VX in VF and then shifts VX to the left by 1.
+			c.do8XYE(currentOperationCode)
+		default:
+			panic(fmt.Sprintf("error: Unknown operationCode (0x%x)", currentOperationCode))
 		}
 
 	case 0x9000:
@@ -176,20 +184,24 @@ func (c *CPU) DoCycle() {
 		// (Typically: 0 to 255) and NN.
 		c.doCXNN(currentOperationCode)
 	case 0xD000:
-		// TODO: DXYN: Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N+1 pixels.
+		// DXYN: Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N+1 pixels.
 		// Each row of 8 pixels is read as bit-coded starting from memory location I;
 		// I value doesn’t change after the execution of this instruction. As described above,
 		// VF is set to 1 if any screen pixels are flipped from set to unset when the sprite is drawn,
 		// and to 0 if that doesn’t happen
-		break
+		c.doDXYN(currentOperationCode)
 	case 0xE000:
 		switch currentOperationCode & 0x000F {
 		case 0x000E:
-			// TODO: EX9E: Skips the next instruction if the key stored in VX is pressed.
+			// EX9E: Skips the next instruction if the key stored in VX is pressed.
 			// (Usually the next instruction is a jump to skip a code block)
+			c.doEX9E(currentOperationCode)
 		case 0x0001:
-			// TODO: EXA1: Skips the next instruction if the key stored in VX isn't pressed.
+			// EXA1: Skips the next instruction if the key stored in VX isn't pressed.
 			// (Usually the next instruction is a jump to skip a code block)
+			c.doEXA1(currentOperationCode)
+		default:
+			panic(fmt.Sprintf("error: Unknown operationCode (0x%x)", currentOperationCode))
 		}
 	case 0xF000:
 		switch currentOperationCode & 0x000F {
@@ -197,19 +209,24 @@ func (c *CPU) DoCycle() {
 			// FX07: Sets VX to the value of the delay timer.
 			c.doFX07(currentOperationCode)
 		case 0x000A:
-			// TODO: FX0A: A key press is awaited, and then stored in VX.
+			// FX0A: A key press is awaited, and then stored in VX.
 			// (Blocking Operation. All instruction halted until next key event)
+			c.doFX0A(currentOperationCode)
 		case 0x0005:
 			switch currentOperationCode & 0x00F0 {
 			case 0x0010:
 				// FX15: Sets the delay timer to VX.
 				c.doFX15(currentOperationCode)
 			case 0x0050:
-				// TODO: FX55: Stores V0 to VX (including VX) in memory starting at address I.
+				// FX55: Stores V0 to VX (including VX) in memory starting at address I.
 				// The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+				c.doFX55(currentOperationCode)
 			case 0x0060:
-				// TODO: FX65: Fills V0 to VX (including VX) with values from memory starting at address I.
+				// FX65: Fills V0 to VX (including VX) with values from memory starting at address I.
 				// The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+				c.doFX65(currentOperationCode)
+			default:
+				panic(fmt.Sprintf("error: Unknown operationCode (0x%x)", currentOperationCode))
 			}
 		case 0x0008:
 			// FX18: Sets the sound timer to VX.
@@ -218,8 +235,9 @@ func (c *CPU) DoCycle() {
 			// FX1E: Adds VX to I. VF is not affected.
 			c.doFX1E(currentOperationCode)
 		case 0x0009:
-			// TODO: FX29: Sets I to the location of the sprite for the character in VX.
+			// FX29: Sets I to the location of the sprite for the character in VX.
 			//  Characters 0-F (in hexadecimal) are represented by a 4x5 font.
+			c.doFX29(currentOperationCode)
 		case 0x0003:
 			// FX33: Stores the binary-coded decimal representation of VX,
 			// with the most significant of three digits at the address in I,
@@ -228,10 +246,12 @@ func (c *CPU) DoCycle() {
 			// place the hundreds digit in memory at location in I, the tens digit at location I+1,
 			// and the ones digit at location I+2.)
 			c.doFX33(currentOperationCode)
+		default:
+			panic(fmt.Sprintf("error: Unknown operationCode (0x%x)", currentOperationCode))
 
 		}
 	default:
-		panic(fmt.Sprintf("error: Unknown operationCode (%v)", currentOperationCode))
+		panic(fmt.Sprintf("error: Unknown operationCode (0x%x)", currentOperationCode))
 	}
 
 	// Update Timer

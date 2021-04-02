@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -8,14 +9,15 @@ import (
 )
 
 type Emulator struct {
-	cpu cpu.CPU
+	cpu *cpu.CPU
 }
 
 func (e *Emulator) Update() error {
 	e.cpu.DoCycle()
-	if e.cpu.ShouldDraw {
-		log.Println("should draw")
-	}
+	// TODO: find a way to do conditional rerendering
+	// if e.cpu.ShouldDraw {
+	// 	log.Println("Should redraw")
+	// }
 
 	// TODO: Handle user input
 
@@ -23,22 +25,30 @@ func (e *Emulator) Update() error {
 }
 
 func (e *Emulator) Draw(s *ebiten.Image) {
-
+	for i, v := range e.cpu.Screen {
+		drawColor := color.White
+		if v == 0 {
+			drawColor = color.Black
+		}
+		s.Set(i%64, i/64, drawColor)
+	}
 }
 
 func (e *Emulator) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return outsideWidth / 12, outsideHeight / 12
+	return outsideWidth / 24, outsideHeight / 24
 }
 
 func main() {
-	// TODO: Enable load ROM
+	// Initialize CPU
+	cpu := new(cpu.CPU)
+	cpu.Boot()
+	// TODO: Enable load ROM from flag
+	cpu.LoadROM("./roms/ibm_logo.ch8")
 	// TODO: add cli utilities
 	// TODO: add scaling functionalities
+
 	ebiten.SetWindowSize(64*12, 32*12)
 	ebiten.SetWindowTitle("Chiper")
-
-	cpu := cpu.CPU{}
-	cpu.Boot()
 	if err := ebiten.RunGame(&Emulator{cpu: cpu}); err != nil {
 		log.Fatal(err)
 	}
