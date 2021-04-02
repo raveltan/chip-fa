@@ -175,21 +175,27 @@ func (c *CPU) doCXNN(operationCode uint16) {
 
 // 0xD*** Instructions
 func (c *CPU) doDXYN(operationCode uint16) {
-	x, y, h := c.register[(operationCode&0x0F00)>>8], c.register[(operationCode&0x00F0)>>4], operationCode&0x000F
-	pixelData := uint8(0)
+	x, y, h := uint16(c.register[(operationCode&0x0F00)>>8]), uint16(c.register[(operationCode&0x00F0)>>4]), operationCode&0x000F
+	pixelData := uint16(0)
 
 	// Track if any pixels are flipped from set to unset.
-	c.register[0xF] = 0
-	for yline := 0; yline < int(h); yline++ {
-		pixelData = c.memory[c.indexRegister+uint16(yline)]
 
-		for xline := 0; xline < 8; xline++ {
+	c.register[0xF] = 0
+	for yline := uint16(0); yline < h; yline++ {
+		pixelData = uint16(c.memory[c.indexRegister+uint16(yline)])
+
+		for xline := uint16(0); xline < 8; xline++ {
+
+			index := (x + xline + ((y + yline) * 64))
+			// Fix for offscreen rendering
+			if index >= uint16(len(c.Screen)) {
+				continue
+			}
 			if (pixelData & (0x80 >> xline)) != 0 {
-				// FIXME: runtime error: index out of range [2101] with length 2048
-				if c.Screen[(int(x)+xline+((int(y)+yline)*64))] == 1 {
+				if c.Screen[index] == 1 {
 					c.register[0xF] = 1
 				}
-				c.Screen[int(x)+xline+((int(y)+yline)*64)] ^= 1
+				c.Screen[index] ^= 1
 			}
 		}
 	}
