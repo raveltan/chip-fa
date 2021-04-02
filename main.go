@@ -10,7 +10,6 @@ import (
 
 func main() {
 	var scaling int
-	var HIDPIscale int
 	var cyclePerSecond int
 	var romFile string
 	var isDebugging bool
@@ -35,16 +34,9 @@ func main() {
 			&cli.IntFlag{
 				Aliases:     []string{"s"},
 				Name:        "scale",
-				Value:       12,
-				Usage:       "Scaling factor for the Chip8's 64 x 32 display",
+				Value:       1,
+				Usage:       "Windows size scaling for HIDPI monitors",
 				Destination: &scaling,
-			},
-			&cli.IntFlag{
-				Aliases:     []string{"x"},
-				Name:        "dscale",
-				Value:       2,
-				Usage:       "Windows Scaling for HIDPI monitors",
-				Destination: &HIDPIscale,
 			},
 			&cli.IntFlag{
 				Aliases:     []string{"c"},
@@ -62,7 +54,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			emulator.StartEmulation(romFile, HIDPIscale, scaling, cyclePerSecond, isDebugging)
+			emulator.StartEmulation(romFile, scaling, scaling, cyclePerSecond, isDebugging)
 			return nil
 		},
 	}

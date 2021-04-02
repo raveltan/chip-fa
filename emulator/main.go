@@ -133,7 +133,7 @@ func StartEmulation(rom string, DPIscale int, displayScale int, cyclePerSecond i
 	if err := cpu.LoadROM(rom); err != nil {
 		log.Fatal(fmt.Sprintf("error: Unable to open ROM, %v", err))
 	}
-	ebiten.SetWindowSize(64*displayScale, 32*displayScale)
+	ebiten.SetWindowSize(64*6*displayScale, 32*6*displayScale)
 	ebiten.SetWindowTitle("Chip-Fa")
 	ebiten.SetMaxTPS(cyclePerSecond)
 	if err := ebiten.RunGame(&Emulator{cpu: cpu, scaleFactor: DPIscale, debug: debug}); err != nil {
