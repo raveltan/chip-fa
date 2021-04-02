@@ -1,14 +1,12 @@
 package cpu
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 )
 
 type CPU struct {
-	// Chip8's opCode is 2 bytes long (16 bits)
-	operationCode uint16
-
 	// Most common implementation of Chip8 uses 4k of memory
 	// https://en.wikipedia.org/wiki/CHIP-8#Memory
 	memory [4096]uint8
@@ -103,9 +101,10 @@ func (c *CPU) DoCycle() {
 	switch currentOperationCode & 0xF000 {
 	case 0x00000:
 		switch currentOperationCode & 0x000F {
-		// TODO: 0NNN: Call machine code routine (not used in most ROMS). (NOT IMPLEMENTED)
+		// 0NNN: Call machine code routine (not used in most ROMS). (NOT IMPLEMENTED)
 		case 0x0000:
-			// TODO: 00E0: Clear Screen.
+			// 00E0: Clear Screen.
+			c.do00E0()
 		case 0x000E:
 			// 00EE: Retrun from subroutine.
 			c.do000E()
@@ -173,9 +172,9 @@ func (c *CPU) DoCycle() {
 		// BNNN: Jumps to the address NNN plus V0.
 		c.doBNNN(currentOperationCode)
 	case 0xC000:
-		// TODO: CXNN: Sets VX to the result of a bitwise and operation on a random number.
+		// CXNN: Sets VX to the result of a bitwise and operation on a random number.
 		// (Typically: 0 to 255) and NN.
-		break
+		c.doCXNN(currentOperationCode)
 	case 0xD000:
 		// TODO: DXYN: Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N+1 pixels.
 		// Each row of 8 pixels is read as bit-coded starting from memory location I;
@@ -195,14 +194,16 @@ func (c *CPU) DoCycle() {
 	case 0xF000:
 		switch currentOperationCode & 0x000F {
 		case 0x0007:
-			// TODO: FX07: Sets VX to the value of the delay timer.
+			// FX07: Sets VX to the value of the delay timer.
+			c.doFX07(currentOperationCode)
 		case 0x000A:
 			// TODO: FX0A: A key press is awaited, and then stored in VX.
 			// (Blocking Operation. All instruction halted until next key event)
 		case 0x0005:
 			switch currentOperationCode & 0x00F0 {
 			case 0x0010:
-				// TODO: FX15: Sets the delay timer to VX.
+				// FX15: Sets the delay timer to VX.
+				c.doFX15(currentOperationCode)
 			case 0x0050:
 				// TODO: FX55: Stores V0 to VX (including VX) in memory starting at address I.
 				// The offset from I is increased by 1 for each value written, but I itself is left unmodified.
@@ -211,9 +212,11 @@ func (c *CPU) DoCycle() {
 				// The offset from I is increased by 1 for each value written, but I itself is left unmodified.
 			}
 		case 0x0008:
-			// TODO: FX18: Sets the sound timer to VX.
+			// FX18: Sets the sound timer to VX.
+			c.doFX18(currentOperationCode)
 		case 0x000E:
-			// TODO: FX1E: Adds VX to I. VF is not affected.
+			// FX1E: Adds VX to I. VF is not affected.
+			c.doFX1E(currentOperationCode)
 		case 0x0009:
 			// TODO: FX29: Sets I to the location of the sprite for the character in VX.
 			//  Characters 0-F (in hexadecimal) are represented by a 4x5 font.
@@ -228,7 +231,7 @@ func (c *CPU) DoCycle() {
 
 		}
 	default:
-		panic("error: Unknown operationCode!")
+		panic(fmt.Sprintf("error: Unknown operationCode (%v)", currentOperationCode))
 	}
 
 	// Update Timer

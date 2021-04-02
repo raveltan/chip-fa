@@ -1,5 +1,7 @@
 package cpu
 
+import "math/rand"
+
 // General Utilities
 func (c *CPU) doAdvanceProgramCounter() {
 	// Increase the program counter by 2 (which is the size of an operationCode)
@@ -7,6 +9,11 @@ func (c *CPU) doAdvanceProgramCounter() {
 }
 
 // 0x0*** Instructions
+func (c *CPU) do00E0() {
+	// TODO: Check correctness of implementation
+	c.screen = [64 * 32]uint8{}
+	c.doAdvanceProgramCounter()
+}
 func (c *CPU) do000E() {
 	// Decrease the stack pointer to the previous one
 	c.stackPointer--
@@ -142,9 +149,35 @@ func (c *CPU) doBNNN(operationCode uint16) {
 }
 
 // 0xC*** Instructions
+func (c *CPU) doCXNN(operationCode uint16) {
+	// TODO: Check correctness of implementation
+	c.register[(operationCode&0x0F00)>>8] = uint8(rand.Intn(255)) & uint8(operationCode&0x00FF)
+	c.doAdvanceProgramCounter()
+}
+
 // 0xD*** Instructions
 // 0xE*** Instructions
 // 0xF*** Instructions
+func (c *CPU) doFX07(operationCode uint16) {
+	// TODO: Check correctness of implementation
+	c.register[(operationCode&0x0F00)>>8] = c.delayTimer
+	c.doAdvanceProgramCounter()
+}
+func (c *CPU) doFX15(operationCode uint16) {
+	// TODO: Check correctness of implementation
+	c.delayTimer = c.register[(operationCode&0x0F00)>>8]
+	c.doAdvanceProgramCounter()
+}
+func (c *CPU) doFX18(operationCode uint16) {
+	// TODO: Check correctness of implementation
+	c.soundTimer = c.register[(operationCode&0x0F00)>>8]
+	c.doAdvanceProgramCounter()
+}
+func (c *CPU) doFX1E(operationCode uint16) {
+	// TODO: Check correctness of implementation
+	c.indexRegister += uint16(c.register[(operationCode&0x0F00)>>8])
+	c.doAdvanceProgramCounter()
+}
 func (c *CPU) doFX33(operationCode uint16) {
 	// Get the value at register X
 	registerXValue := c.register[(operationCode&0x0F00)>>8]
