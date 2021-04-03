@@ -17,7 +17,7 @@ type Emulator struct {
 	cpu             *cpu.CPU
 	beepAudioPlayer *audio.Player
 	beepAudioTimer  int
-	scaleFactor     int
+	scaleFactor     float64
 	debug           bool
 	pause           bool
 }
@@ -123,17 +123,20 @@ func (e *Emulator) Draw(s *ebiten.Image) {
 }
 
 func (e *Emulator) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return (outsideWidth) / (12 * e.scaleFactor), (outsideHeight) / (12 * e.scaleFactor)
+	return (outsideWidth) / (12 * int(e.scaleFactor)), (outsideHeight) / int((12 * e.scaleFactor))
 }
 
-func StartEmulation(rom string, DPIscale int, displayScale int, cyclePerSecond int, debug bool) {
+func StartEmulation(rom string, DPIscale float64, displayScale float64, cyclePerSecond int, debug bool) {
+	if DPIscale == 0 {
+		DPIscale = (ebiten.DeviceScaleFactor())
+	}
 	// Initialize CPU
 	cpu := new(cpu.CPU)
 	cpu.Boot()
 	if err := cpu.LoadROM(rom); err != nil {
 		log.Fatal(fmt.Sprintf("error: Unable to open ROM, %v", err))
 	}
-	ebiten.SetWindowSize(64*6*displayScale, 32*6*displayScale)
+	ebiten.SetWindowSize(64*12*int(displayScale), 32*12*int(displayScale))
 	ebiten.SetWindowTitle("Chip-Fa")
 	ebiten.SetMaxTPS(cyclePerSecond)
 	if err := ebiten.RunGame(&Emulator{cpu: cpu, scaleFactor: DPIscale, debug: debug}); err != nil {

@@ -9,10 +9,11 @@ import (
 )
 
 func main() {
-	var scaling int
+	var scaling float64
 	var cyclePerSecond int
 	var romFile string
 	var isDebugging bool
+	var hdpiScale float64
 
 	cli.VersionFlag = &cli.BoolFlag{
 		Name:    "version",
@@ -31,12 +32,19 @@ func main() {
 				Required:    true,
 				Destination: &romFile,
 			},
-			&cli.IntFlag{
+			&cli.Float64Flag{
 				Aliases:     []string{"s"},
 				Name:        "scale",
 				Value:       1,
-				Usage:       "Windows size scaling for HIDPI monitors",
+				Usage:       "Window size scaling",
 				Destination: &scaling,
+			},
+			&cli.Float64Flag{
+				Aliases:     []string{"x"},
+				Name:        "hdi-scale",
+				Value:       0,
+				Usage:       "HDPI Pixel Scaling",
+				Destination: &hdpiScale,
 			},
 			&cli.IntFlag{
 				Aliases:     []string{"c"},
@@ -54,7 +62,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			emulator.StartEmulation(romFile, scaling, scaling, cyclePerSecond, isDebugging)
+			emulator.StartEmulation(romFile, hdpiScale, scaling, cyclePerSecond, isDebugging)
 			return nil
 		},
 	}

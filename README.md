@@ -33,9 +33,13 @@ Running a ROM with default configuration
 ```bash
 chip-fa -r roms/tetris.ch8
 ```
-You can also set the scaling of the emulator using the -s flag, if you are using HIDPI monitor.
+You can also set the window scaling using the -s flag
 ```bash
-chip-fa -r roms/tetris.ch8 -s 2
+chip-fa -r roms/tetris.ch8 -s 2.0
+```
+If you are using HIDPI screen, please make sure to set the -x flag according to your system scaling if not done automatically.
+```bash
+chip-fa -r roms/tetris.ch8 -x 2.0
 ```
 If you want to alter the amount of cycle per second, it can be done by the -c flag. 
 ```bash
