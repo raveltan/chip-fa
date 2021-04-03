@@ -18,7 +18,7 @@ Chip-fa's executable is currently available in these platforms:
 
 To download the executable, head to [release section](https://github.com/raveltan/chip-fa/releases).
 
-For best experiece of using Chip-fa, please renmae it to 'chip-fa' and add it to the system PATH.
+For best experiece of using Chip-fa, please add it to the system PATH.
 ```bash
 # Linux/Mac:
 echo 'export PATH="$PATH:/path/to/chip-fa"' >> ~/.profile
