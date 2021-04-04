@@ -6,32 +6,32 @@ import (
 )
 
 type CPU struct {
-	// Most common implementation of Chip8 uses 4k of memory
+	// Most common implementation of Chip8 uses 4k of Memory
 	// https://en.wikipedia.org/wiki/CHIP-8#Memory
-	memory [4096]uint8
+	Memory [4096]uint8
 
-	// Chip8's register is a 1 byte general purpose register V0,V1...VE.
-	register [16]uint8
+	// Chip8's Register is a 1 byte general purpose Register V0,V1...VE.
+	Register [16]uint8
 
 	// Index Register
-	indexRegister uint16
+	IndexRegister uint16
 
 	// Program Counter
-	programCounter uint16
+	ProgramCounter uint16
 
 	// Chip8's screen is 64 x 32 black and white screen.
 	Screen [64 * 32]uint8
 
 	// Timers (60Hz)
-	delayTimer uint8
+	DelayTimer uint8
 	// Will buzz the system when it reaches 0
 	// Updated on the rendering side
 	SoundTimer uint8
 
 	// Chip8's Stack
-	stack [16]uint16
+	Stack [16]uint16
 	// Stack pointer
-	stackPointer uint16
+	StackPointer uint16
 
 	// Keypad states tracker
 	KeypadStates [16]uint8
@@ -47,11 +47,11 @@ func (c *CPU) Boot() {
 	// Chip8's application entry point is 0x200
 	// Program counter should start at application entry point
 	// Adreesses before 0x200 is commonly used by the interpreter
-	c.programCounter = 0x200
+	c.ProgramCounter = 0x200
 
 	// Load fontset to memory
 	for i, v := range fontset {
-		c.memory[i] = v
+		c.Memory[i] = v
 	}
 }
 
@@ -65,7 +65,7 @@ func (c *CPU) LoadROM(file string) error {
 	}
 
 	for i := 0; i < len(rom); i++ {
-		c.memory[0x200+i] = rom[i]
+		c.Memory[0x200+i] = rom[i]
 	}
 
 	return nil
@@ -87,7 +87,7 @@ func (c *CPU) DoCycle() {
 	// Resulting 0xFF10 as the operationCode
 	// -----------
 
-	currentOperationCode := uint16(c.memory[c.programCounter])<<8 | uint16(c.memory[c.programCounter+1])
+	currentOperationCode := uint16(c.Memory[c.ProgramCounter])<<8 | uint16(c.Memory[c.ProgramCounter+1])
 
 	// Decode operationCode
 	// operationCode table: https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
@@ -258,8 +258,8 @@ func (c *CPU) DoCycle() {
 
 	// Sound timer is updated on the rendering side
 
-	if c.delayTimer > 0 {
-		c.delayTimer--
+	if c.DelayTimer > 0 {
+		c.DelayTimer--
 	}
 
 }

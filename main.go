@@ -42,7 +42,7 @@ func main() {
 			&cli.Float64Flag{
 				Aliases:     []string{"x"},
 				Name:        "hdi-scale",
-				Value:       0,
+				Value:       1,
 				Usage:       "HDPI Pixel Scaling",
 				Destination: &hdpiScale,
 			},

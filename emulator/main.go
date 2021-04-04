@@ -16,7 +16,7 @@ import (
 )
 
 type Emulator struct {
-	cpu             *cpu.CPU
+	Cpu             *cpu.CPU
 	beepAudioPlayer *audio.Player
 	beepAudioTimer  int
 	scaleFactor     float64
@@ -26,45 +26,45 @@ type Emulator struct {
 
 func (e *Emulator) Update() error {
 	// Reset keypad state
-	for i := range e.cpu.KeypadStates {
-		e.cpu.KeypadStates[i] = 0
+	for i := range e.Cpu.KeypadStates {
+		e.Cpu.KeypadStates[i] = 0
 	}
 	// Set keypad states
 	for k := ebiten.Key(0); k <= ebiten.KeyMax; k++ {
 		if ebiten.IsKeyPressed(k) {
 			switch k.String() {
 			case "1":
-				e.cpu.KeypadStates[0] = 1
+				e.Cpu.KeypadStates[0] = 1
 			case "2":
-				e.cpu.KeypadStates[1] = 1
+				e.Cpu.KeypadStates[1] = 1
 			case "3":
-				e.cpu.KeypadStates[2] = 1
+				e.Cpu.KeypadStates[2] = 1
 			case "4":
-				e.cpu.KeypadStates[3] = 1
+				e.Cpu.KeypadStates[3] = 1
 			case "Q":
-				e.cpu.KeypadStates[4] = 1
+				e.Cpu.KeypadStates[4] = 1
 			case "W":
-				e.cpu.KeypadStates[5] = 1
+				e.Cpu.KeypadStates[5] = 1
 			case "E":
-				e.cpu.KeypadStates[6] = 1
+				e.Cpu.KeypadStates[6] = 1
 			case "R":
-				e.cpu.KeypadStates[7] = 1
+				e.Cpu.KeypadStates[7] = 1
 			case "A":
-				e.cpu.KeypadStates[8] = 1
+				e.Cpu.KeypadStates[8] = 1
 			case "S":
-				e.cpu.KeypadStates[9] = 1
+				e.Cpu.KeypadStates[9] = 1
 			case "D":
-				e.cpu.KeypadStates[10] = 1
+				e.Cpu.KeypadStates[10] = 1
 			case "F":
-				e.cpu.KeypadStates[11] = 1
+				e.Cpu.KeypadStates[11] = 1
 			case "Z":
-				e.cpu.KeypadStates[12] = 1
+				e.Cpu.KeypadStates[12] = 1
 			case "X":
-				e.cpu.KeypadStates[13] = 1
+				e.Cpu.KeypadStates[13] = 1
 			case "C":
-				e.cpu.KeypadStates[14] = 1
+				e.Cpu.KeypadStates[14] = 1
 			case "V":
-				e.cpu.KeypadStates[15] = 1
+				e.Cpu.KeypadStates[15] = 1
 			case "0":
 				if e.debug != nil {
 					e.Pause = true
@@ -86,14 +86,14 @@ func (e *Emulator) Update() error {
 
 		// FIXME: find a way to do conditional rerendering
 		// Update sound timer
-		if e.cpu.SoundTimer > 0 || e.beepAudioTimer > 0 {
-			if e.cpu.SoundTimer > 0 {
-				if e.cpu.SoundTimer == 1 {
+		if e.Cpu.SoundTimer > 0 || e.beepAudioTimer > 0 {
+			if e.Cpu.SoundTimer > 0 {
+				if e.Cpu.SoundTimer == 1 {
 					// Beep the buzzer
 					e.beepAudioPlayer.Play()
 					e.beepAudioTimer = 25
 				}
-				e.cpu.SoundTimer--
+				e.Cpu.SoundTimer--
 			}
 			if e.beepAudioTimer > 0 {
 				if e.beepAudioTimer == 1 {
@@ -103,13 +103,13 @@ func (e *Emulator) Update() error {
 				e.beepAudioTimer--
 			}
 		}
-		e.cpu.DoCycle()
+		e.Cpu.DoCycle()
 	}
 	return nil
 }
 
 func (e *Emulator) Draw(s *ebiten.Image) {
-	for i, v := range e.cpu.Screen {
+	for i, v := range e.Cpu.Screen {
 		drawColor := color.White
 		if v == 0 {
 			drawColor = color.Black
@@ -123,9 +123,6 @@ func (e *Emulator) Layout(outsideWidth, outsideHeight int) (screenWidth, screenH
 }
 
 func StartEmulation(rom string, DPIscale float64, displayScale float64, cyclePerSecond int, debug bool) {
-	if DPIscale == 0 {
-		DPIscale = (ebiten.DeviceScaleFactor())
-	}
 	// Initialize CPU
 	cpu := new(cpu.CPU)
 	cpu.Boot()
@@ -135,14 +132,28 @@ func StartEmulation(rom string, DPIscale float64, displayScale float64, cyclePer
 	ebiten.SetWindowSize(64*12*int(displayScale), 32*12*int(displayScale))
 	ebiten.SetWindowTitle("Chip-Fa")
 	ebiten.SetMaxTPS(cyclePerSecond)
-	emulator := &Emulator{cpu: cpu, scaleFactor: DPIscale}
-	emulator.debug = &debugger.Debugger{ResumeEmulationCallback: func() {
+
+	// Setup emulator and debugger
+	emulator := &Emulator{Cpu: cpu, scaleFactor: DPIscale}
+	emulator.debug = &debugger.Debugger{ResumeEmulationCallback: func() bool {
+		if !emulator.Pause {
+			return false
+		}
 		emulator.Pause = false
-	}, PauseEmulationCallback: func() {
-		emulator.Pause = true
+		return true
+	}, PauseEmulationCallback: func() bool {
+		if emulator.Pause {
+			return false
+		}
+		emulator.Pause = false
+		return true
 	}, ExitCallback: func() {
 		os.Exit(0)
+	}, GetRegisterCallback: func() [16]uint8 {
+		return emulator.Cpu.Register
 	}}
+
+	// Start emulation
 	if err := ebiten.RunGame(emulator); err != nil {
 		log.Fatal(err)
 	}
