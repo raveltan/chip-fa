@@ -3,6 +3,7 @@ package emulator
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"image/color"
 	_ "image/png"
@@ -10,6 +11,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/raveltan/chip-fa/cpu"
+	"github.com/raveltan/chip-fa/debugger"
 	"github.com/raveltan/chip-fa/wavegen"
 )
 
@@ -18,8 +20,8 @@ type Emulator struct {
 	beepAudioPlayer *audio.Player
 	beepAudioTimer  int
 	scaleFactor     float64
-	debug           bool
-	pause           bool
+	debug           *debugger.Debugger
+	Pause           bool
 }
 
 func (e *Emulator) Update() error {
@@ -63,21 +65,15 @@ func (e *Emulator) Update() error {
 				e.cpu.KeypadStates[14] = 1
 			case "V":
 				e.cpu.KeypadStates[15] = 1
-
 			case "0":
-				// add to cli help
-				if e.debug {
-					e.pause = true
-				}
-			case "9":
-				if e.debug {
-					e.pause = false
+				if e.debug != nil {
+					e.Pause = true
+					go e.debug.StartDebugShell()
 				}
 			}
-
 		}
 	}
-	if !e.pause {
+	if !e.Pause {
 		if e.beepAudioPlayer == nil {
 			// Pass the (infinite) stream to audio.NewPlayer.
 			// After calling Play, the stream never ends as long as the player object lives.
@@ -139,7 +135,15 @@ func StartEmulation(rom string, DPIscale float64, displayScale float64, cyclePer
 	ebiten.SetWindowSize(64*12*int(displayScale), 32*12*int(displayScale))
 	ebiten.SetWindowTitle("Chip-Fa")
 	ebiten.SetMaxTPS(cyclePerSecond)
-	if err := ebiten.RunGame(&Emulator{cpu: cpu, scaleFactor: DPIscale, debug: debug}); err != nil {
+	emulator := &Emulator{cpu: cpu, scaleFactor: DPIscale}
+	emulator.debug = &debugger.Debugger{ResumeEmulationCallback: func() {
+		emulator.Pause = false
+	}, PauseEmulationCallback: func() {
+		emulator.Pause = true
+	}, ExitCallback: func() {
+		os.Exit(0)
+	}}
+	if err := ebiten.RunGame(emulator); err != nil {
 		log.Fatal(err)
 	}
 
