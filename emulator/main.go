@@ -122,6 +122,59 @@ func (e *Emulator) Layout(outsideWidth, outsideHeight int) (screenWidth, screenH
 	return (outsideWidth) / (12 * int(e.scaleFactor)), (outsideHeight) / int((12 * e.scaleFactor))
 }
 
+func createDebugger(e *Emulator) *debugger.Debugger {
+	return &debugger.Debugger{ResumeEmulationCallback: func() bool {
+		if !e.Pause {
+			return false
+		}
+		e.Pause = false
+		return true
+	}, PauseEmulationCallback: func() bool {
+		if e.Pause {
+			return false
+		}
+		e.Pause = true
+		return true
+	}, ExitCallback: func() {
+		os.Exit(0)
+	}, GetRegisterCallback: func() [16]uint8 {
+		return e.Cpu.Register
+	}, GetTimerCallback: func() [2]uint8 {
+		return [2]uint8{e.Cpu.DelayTimer, e.Cpu.SoundTimer}
+	}, SetRegisterCallback: func(u1, u2 uint8) {
+		e.Cpu.Register[u1] = u2
+	}, SetTimerCallback: func(isDelayTimer bool, u uint8) {
+		if isDelayTimer {
+			e.Cpu.DelayTimer = u
+		} else {
+			e.Cpu.SoundTimer = u
+		}
+	}, GetSpecialCallback: func() (r string) {
+		r += "I: " + fmt.Sprintf("0x%x", e.Cpu.IndexRegister) + "\n"
+		r += "PC: " + fmt.Sprintf("0x%x", e.Cpu.ProgramCounter) + "\n"
+		r += "Current Instruction Location: " + fmt.Sprintf("0x%x", e.Cpu.ProgramCounter-0x200) + "\n"
+		r += "Stack: ["
+		for i, v := range e.Cpu.Stack {
+			if i == int(e.Cpu.StackPointer) {
+				r += "<" + fmt.Sprintf("0x%x", v) + "> ,"
+				continue
+			}
+			r += fmt.Sprintf("%x", v) + " ,"
+		}
+		r += "]"
+		return
+	}, SetICallback: func(u uint16) {
+		e.Cpu.IndexRegister = u
+	}, SetPcCallback: func(u uint16) {
+		e.Cpu.ProgramCounter = u
+	}, GetMemoryViewCallback: func() (m []uint8) {
+		for i := e.Cpu.ProgramCounter - 120; i <= e.Cpu.ProgramCounter+121 && i <= 4096; i++ {
+			m = append(m, e.Cpu.Memory[i])
+		}
+		return
+	}}
+}
+
 func StartEmulation(rom string, DPIscale float64, displayScale float64, cyclePerSecond int, debug bool) {
 	// Initialize CPU
 	cpu := new(cpu.CPU)
@@ -135,23 +188,7 @@ func StartEmulation(rom string, DPIscale float64, displayScale float64, cyclePer
 
 	// Setup emulator and debugger
 	emulator := &Emulator{Cpu: cpu, scaleFactor: DPIscale}
-	emulator.debug = &debugger.Debugger{ResumeEmulationCallback: func() bool {
-		if !emulator.Pause {
-			return false
-		}
-		emulator.Pause = false
-		return true
-	}, PauseEmulationCallback: func() bool {
-		if emulator.Pause {
-			return false
-		}
-		emulator.Pause = false
-		return true
-	}, ExitCallback: func() {
-		os.Exit(0)
-	}, GetRegisterCallback: func() [16]uint8 {
-		return emulator.Cpu.Register
-	}}
+	emulator.debug = createDebugger(emulator)
 
 	// Start emulation
 	if err := ebiten.RunGame(emulator); err != nil {
