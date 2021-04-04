@@ -18,6 +18,8 @@ Chip-fa's executable is currently available in these platforms:
 - Windows x64
 - Linux x64
 
+> Mac OS is currently not supported due to metal that cannot be cross-compiled.
+
 
 To download the executable, head to [release section](https://github.com/raveltan/chip-fa/releases).
 
