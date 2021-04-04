@@ -1,4 +1,7 @@
 # Chip-Fa
+![Chip-fa icon](./icon.png)
+
+
 A fully-featured [Chip8](https://en.wikipedia.org/wiki/CHIP-8) emulator written in GO.
 
 ## Current Status
