@@ -46,11 +46,42 @@ If you want to alter the amount of cycle per second, it can be done by the -c fl
 # Run the emulator at 600/60 of the normal clock speed
 chip-fa -r roms/tetris.ch8 -c 600
 ```
-You can also enable debug mode for developing ROMS. (UNDER DEVELOPMENT).
-This currently only allows user to stop and resume execution, other functionallity will be added later.
+You can also enable debug mode for developing ROMS. (more about the debugger at the next section)
 ```bash
 chip-fa -r roms/tetris.ch8 -d
 ```
+## Debugging ROMS
+
+Chip-fa includes a very powerful debugger for ROM developer. This debugger can be activated by pressing 0 when you are running a ROM the -d flag and will also be automatically activated when running a ROM with breakpoint (0x0001) instruction (this instruction is only available to this emulator). Some of the common use cases is available here:
+
+Gather CPU related information (I,PC,stack,SP)
+```bash
+cpu
+```
+
+Gather instructions surrounding the current program counter
+```bash
+instruction-view
+```
+or
+```bash
+iv
+```
+
+Set a specific value to a register, in this case VF with value of 0xFF
+```bash
+sv 0xF 0xFF
+```
+
+more information about the command available in the debuger can be accessed from the help menu.
+```bash
+help
+```
+
+
+## Additional Operation Codes
+
+- 0x0001: Debug breakpoint, if a ROM contains this operation code, and debuggin mode is on, the application while stop and activate the debugger shell.
 
 ## Screenshots
 ![Chip8 Logo ROM.](./ss/chip8.png)

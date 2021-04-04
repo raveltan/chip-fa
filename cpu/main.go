@@ -41,6 +41,8 @@ type CPU struct {
 	// FIXME: currently not used due the internal working of the graphic libarry
 	// that always draws 60Hz thus this flag is ignored.
 	ShouldDraw bool
+
+	StopForDebuggingCallback func()
 }
 
 func (c *CPU) Boot() {
@@ -107,6 +109,10 @@ func (c *CPU) DoCycle() {
 		case 0x0000:
 			// 00E0: Clear Screen.
 			c.do00E0()
+		case 0x0001:
+			// 0001: PROGRAM BREAKPOINT
+			// TODO: Add to documentation
+			c.do0001()
 		case 0x000E:
 			// 00EE: Retrun from subroutine.
 			c.do000E()
@@ -261,5 +267,4 @@ func (c *CPU) DoCycle() {
 	if c.DelayTimer > 0 {
 		c.DelayTimer--
 	}
-
 }

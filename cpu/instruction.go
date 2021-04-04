@@ -1,6 +1,9 @@
 package cpu
 
-import "math/rand"
+import (
+	"log"
+	"math/rand"
+)
 
 // General Utilities
 func (c *CPU) doAdvanceProgramCounter() {
@@ -16,6 +19,13 @@ func (c *CPU) do00E0() {
 	c.ShouldDraw = true
 	c.doAdvanceProgramCounter()
 }
+
+func (c *CPU) do0001() {
+	log.Println("Heree")
+	c.StopForDebuggingCallback()
+	c.doAdvanceProgramCounter()
+}
+
 func (c *CPU) do000E() {
 	// Decrease the stack pointer to the previous one
 	c.StackPointer--

@@ -65,7 +65,7 @@ func (e *Emulator) Update() error {
 				e.Cpu.KeypadStates[14] = 1
 			case "V":
 				e.Cpu.KeypadStates[15] = 1
-			case "0":
+			case "0", "KP0":
 				if e.debug != nil {
 					e.Pause = true
 					go e.debug.StartDebugShell()
@@ -188,7 +188,15 @@ func StartEmulation(rom string, DPIscale float64, displayScale float64, cyclePer
 
 	// Setup emulator and debugger
 	emulator := &Emulator{Cpu: cpu, scaleFactor: DPIscale}
-	emulator.debug = createDebugger(emulator)
+	if debug {
+		emulator.debug = createDebugger(emulator)
+	}
+	cpu.StopForDebuggingCallback = func() {
+		if debug {
+			emulator.Pause = true
+			go emulator.debug.StartDebugShell()
+		}
+	}
 
 	// Start emulation
 	if err := ebiten.RunGame(emulator); err != nil {

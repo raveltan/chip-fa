@@ -116,7 +116,7 @@ func (d *Debugger) StartDebugShell() {
 	})
 	d.shell.AddCmd(&ishell.Cmd{
 		Name: "sv",
-		Help: "Set a value to a specific register (ex: setv 0xF 0xFF)",
+		Help: "Set a value to a specific register (ex: sv 0xF 0xFF)",
 		Func: func(c *ishell.Context) {
 			addressString := strings.Replace(c.Args[0], "0x", "", -1)
 			address, err := strconv.ParseUint(addressString, 16, 8)
@@ -140,7 +140,7 @@ func (d *Debugger) StartDebugShell() {
 
 	d.shell.AddCmd(&ishell.Cmd{
 		Name: "st",
-		Help: "Set a value to a specific timer (ex: setv 0x0 0xFF, where 0x0 means delay timer and 0x1 means sound timer)",
+		Help: "Set a value to a specific timer (ex: st 0x0 0xFF, where 0x0 means delay timer and 0x1 means sound timer)",
 		Func: func(c *ishell.Context) {
 			addressString := strings.Replace(c.Args[0], "0x", "", -1)
 			address, err := strconv.ParseUint(addressString, 16, 8)
