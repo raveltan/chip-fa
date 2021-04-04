@@ -6,8 +6,8 @@ The following is the planned features of Chip-fa:
 - Screen emulation
 - Sound emulation
 - Keypad emulation
-- Debugger (COMING SOON)
-- Memory view (COMING SOON)
+- Debugger
+- Memory view (in debugger)
 
 ## Installation
 Chip-fa's executable is currently available in these platforms:
