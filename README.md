@@ -1,5 +1,5 @@
 # Chip-Fa
-![Chip-fa icon](./icon.png)
+![Chip-fa icon](./Icon.png)
 
 
 A fully-featured [Chip8](https://en.wikipedia.org/wiki/CHIP-8) emulator written in GO.
