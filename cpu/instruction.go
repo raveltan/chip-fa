@@ -1,7 +1,6 @@
 package cpu
 
 import (
-	"log"
 	"math/rand"
 )
 
@@ -21,7 +20,6 @@ func (c *CPU) do00E0() {
 }
 
 func (c *CPU) do0001() {
-	log.Println("Heree")
 	c.StopForDebuggingCallback()
 	c.doAdvanceProgramCounter()
 }
