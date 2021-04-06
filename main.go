@@ -23,7 +23,7 @@ func main() {
 	app := &cli.App{
 		Name:    "Chip-Fa",
 		Usage:   "Chip8's emulator written in GO",
-		Version: "2.0.0",
+		Version: "2.0.1",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Aliases:     []string{"r"},
