@@ -55,6 +55,13 @@ You can also enable debug mode for developing ROMS. (more about the debugger at 
 ```bash
 chip-fa -r roms/tetris.ch8 -d
 ```
+## Official ROMS
+
+Official Chip-fa ROMS is listed below:
+- https://github.com/kronmess/chip-fa-demo
+- https://github.com/dankpanda/chip-fa-benchmark
+- https://github.com/will8889/chip-fa-game
+
 ## Debugging ROMS
 
 Chip-fa includes a very powerful debugger for ROM developer. This debugger can be activated by pressing 0 when you are running a ROM the -d flag and will also be automatically activated when running a ROM with breakpoint (0x0001) instruction (this instruction is only available to this emulator). Some of the common use cases is available here:
